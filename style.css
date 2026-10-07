@@ -1,7 +1,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     text-align: center;
-    background-color: #f4f4f9;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     margin: 0;
     padding: 20px;
     color: #333;
@@ -10,70 +10,229 @@ body {
     align-items: center;
     min-height: 100vh;
     box-sizing: border-box;
+    transition: background 0.4s ease;
+}
+
+body.activo {
+    background: linear-gradient(135deg, #d4efdf 0%, #a9dfbf 100%);
 }
 
 h1 {
-    color: #2c3e50;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
+    color: #1b4f72;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
+#estadoActividad {
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.estado-parado {
+    background-color: #fadbd8;
+    color: #900c3f;
+    border: 1px solid #f5b7b1;
+}
+
+.estado-activo {
+    background-color: #d4efdf;
+    color: #145a32;
+    border: 1px solid #a9dfbf;
+}
+
+/* Tarjetas con colores vivos y degradados alegres */
 .tarjeta {
-    background: white;
+    background: linear-gradient(135deg, #ffffff 0%, #fcfcfc 100%);
     padding: 20px;
-    margin: 10px auto;
-    border-radius: 16px;
+    margin: 12px auto;
+    border-radius: 20px;
     width: 100%;
     max-width: 320px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+}
+
+/* Toque de color personalizado para cada tarjeta */
+.tarjeta:nth-of-type(1) { /* Pasos */
+    background: linear-gradient(135deg, #e8f8f5 0%, #d1f2eb 100%);
+    border-left: 6px solid #2ecc71;
+}
+
+.tarjeta:nth-of-type(2) { /* Distancia */
+    background: linear-gradient(135deg, #ebf5fb 0%, #d4efdf 100%);
+    border-left: 6px solid #3498db;
+}
+
+.tarjeta:nth-of-type(3) { /* Calorías */
+    background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);
+    border-left: 6px solid #f1c40f;
 }
 
 .tarjeta h3 {
     margin: 0 0 5px 0;
-    color: #7f8c8d;
-    font-size: 1rem;
+    color: #566573;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .numero {
     font-size: 2.8rem;
-    font-weight: bold;
-    color: #27ae60;
+    font-weight: 800;
+    color: #2c3e50;
     margin: 5px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .botones {
-    margin: 15px 0;
+    margin: 10px 0 15px 0;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 button {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: bold;
-    padding: 12px 20px;
+    padding: 12px 18px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     cursor: pointer;
     color: white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.1s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.1s ease, filter 0.2s;
 }
 
 button:active {
     transform: scale(0.95);
 }
 
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 #btnEmpezar {
-    background-color: #2ecc71;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
 }
 
 #btnParar {
-    background-color: #e74c3c;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
 }
 
+#btnTutorial {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Tarjeta de Gráfica */
 .seccion-grafica {
     max-width: 320px;
     padding: 15px;
+    background: linear-gradient(135deg, #ffffff 0%, #f4f6f7 100%);
+    border-left: 6px solid #9b59b6;
+}
+
+/* Tarjeta de la Lista de Historial */
+.seccion-historial {
+    max-width: 320px;
+    text-align: left;
+    background: linear-gradient(135deg, #ffffff 0%, #fef9e7 100%);
+    border-left: 6px solid #e67e22;
+}
+
+.lista-historial-contenedor {
+    max-height: 220px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.item-historial {
+    background: white;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border-left: 4px solid #2ecc71;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.item-historial-Header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+.item-historial-detalles {
+    color: #566573;
+    font-size: 0.8rem;
+}
+
+.sin-historial {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 0.9rem;
+    margin: 10px 0;
+}
+
+/* Estilos del Modal de Tutorial */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-contenido {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    width: 85%;
+    max-width: 300px;
+    text-align: left;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.modal-contenido h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.modal-contenido p {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+#CerrarTutorial {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
 }

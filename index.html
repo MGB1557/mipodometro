@@ -14,8 +14,11 @@
 
     <div class="botones">
         <button id="btnEmpezar">Empezar a Caminar</button>
-        <button id="btnParar">Parar</button>
+        <button id="btnParar" disabled>Parar</button>
+        <button id="btnTutorial">Ayuda / Tutorial</button>
     </div>
+
+    <div id="estadoActividad" class="estado-parado">Estado: Detenido</div>
 
     <div class="tarjeta">
         <h3>Pasos dados</h3>
@@ -32,10 +35,30 @@
         <div id="contadorKcal" class="numero">0.0</div>
     </div>
 
-    <!-- Sección de Historial y Gráfica -->
+    <!-- Sección de Gráfica -->
     <div class="tarjeta seccion-grafica">
         <h3>Evolución de Pasos</h3>
         <canvas id="graficaPasos"></canvas>
+    </div>
+
+    <!-- Sección de Lista de Historial -->
+    <div class="tarjeta seccion-historial">
+        <h3>Historial de Paseos</h3>
+        <div id="listaHistorial" class="lista-historial-contenedor">
+            <p class="sin-historial">No hay paseos guardados todavía.</p>
+        </div>
+    </div>
+
+    <!-- Modal del Tutorial Actualizado -->
+    <div id="modalTutorial" class="modal">
+        <div class="modal-contenido">
+            <h3>Guía de Uso del Podómetro</h3>
+            <p>1. Pulsa <strong>"Empezar a Caminar"</strong> y acepta los permisos de movimiento de tu móvil.</p>
+            <p>2. El fondo cambiará a un tono verdoso y se pondrá en marcha el cronómetro automático.</p>
+            <p>3. Guarda el móvil en el bolsillo o llévalo contigo mientras caminas.</p>
+            <p>4. Al terminar, pulsa <strong>"Parar"</strong>. Se guardarán tu tiempo, pasos y kilómetros en la lista de historial para comparar tus marcas y ver si mejoras.</p>
+            <button id="CerrarTutorial">¡Entendido!</button>
+        </div>
     </div>
 
     <script src="script.js"></script>

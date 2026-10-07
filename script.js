@@ -4,21 +4,44 @@ let distanciaKm = 0;
 let calorias = 0;
 let caminando = false;
 
+let tiempoInicio = 0;
+let cronometroIntervalo = null;
+let segundosTranscurridos = 0;
+
 const longitudZancada = 0.74; 
-const pesoUsuarioKg = 70;     
+const pesoUsuarioKg = 70;    
 
 const btnEmpezar = document.getElementById('btnEmpezar');
 const btnParar = document.getElementById('btnParar');
+const btnTutorial = document.getElementById('btnTutorial');
+const cerrarTutorialBtn = document.getElementById('CerrarTutorial');
+const modalTutorial = document.getElementById('modalTutorial');
 const txtPasos = document.getElementById('contadorPasos');
 const txtKm = document.getElementById('contadorKm');
 const txtKcal = document.getElementById('contadorKcal');
+const estadoActividad = document.getElementById('estadoActividad');
+const listaHistorialContainer = document.getElementById('listaHistorial');
 
 let ultimoPasoTiempo = 0;
 let miGrafica = null;
 
-// Inicializar gráfica al cargar la página
+// Inicializar gráfica, lista de historial y eventos al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     actualizarGrafica();
+    actualizarListaHistorial();
+    
+    if (!localStorage.getItem('tutorialVisto')) {
+        modalTutorial.style.display = 'flex';
+    }
+});
+
+btnTutorial.addEventListener('click', () => {
+    modalTutorial.style.display = 'flex';
+});
+
+cerrarTutorialBtn.addEventListener('click', () => {
+    modalTutorial.style.display = 'none';
+    localStorage.setItem('tutorialVisto', 'true');
 });
 
 async function solicitarPermisosSensor() {
@@ -43,9 +66,24 @@ function iniciarSensor() {
     pasos = 0;
     distanciaKm = 0;
     calorias = 0;
+    segundosTranscurridos = 0;
+    tiempoInicio = new Date();
+    
     actualizarPantalla();
     
-    alert("¡Podómetro en marcha! Ya puedes guardar el móvil en el bolsillo.");
+    // Iniciar cronómetro de segundos
+    cronometroIntervalo = setInterval(() => {
+        segundosTranscurridos++;
+    }, 1000);
+    
+    // Cambios visuales de estado activo
+    document.body.classList.add('activo');
+    estadoActividad.textContent = "Estado: En marcha (Caminando)";
+    estadoActividad.className = "estado-activo";
+    
+    btnEmpezar.disabled = true;
+    btnParar.disabled = false;
+    
     window.addEventListener('devicemotion', manejarMovimiento);
 }
 
@@ -75,15 +113,28 @@ function actualizarPantalla() {
     txtKcal.textContent = calorias.toFixed(1);
 }
 
+function formatearTiempo(segundos) {
+    const mins = Math.floor(segundos / 60);
+    const secs = segundos % 60;
+    return `${mins} min ${secs} seg`;
+}
+
 function guardarPaseo() {
     if (pasos === 0) {
         alert("No has dado ningún paso en este paseo.");
         return;
     }
 
+    clearInterval(cronometroIntervalo);
+
+    const horaInicioStr = tiempoInicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const hoy = new Date().toLocaleDateString();
+    const tiempoTotalStr = formatearTiempo(segundosTranscurridos);
+
     const nuevoPaseo = {
         fecha: hoy,
+        horaInicio: horaInicioStr,
+        duracion: tiempoTotalStr,
         pasos: pasos,
         km: Number(distanciaKm.toFixed(2)),
         kcal: Number(calorias.toFixed(1))
@@ -94,7 +145,39 @@ function guardarPaseo() {
     localStorage.setItem('historialPaseos', JSON.stringify(historial));
 
     actualizarGrafica();
-    alert(`¡Paseo guardado!\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)`);
+    actualizarListaHistorial();
+    
+    alert(`¡Paseo guardado!\nFecha: ${hoy} (${horaInicioStr})\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)`);
+}
+
+function actualizarListaHistorial() {
+    if (!listaHistorialContainer) return;
+
+    let historial = JSON.parse(localStorage.getItem('historialPaseos')) || [];
+    
+    if (historial.length === 0) {
+        listaHistorialContainer.innerHTML = `<p class="sin-historial">No hay paseos guardados todavía.</p>`;
+        return;
+    }
+
+    // Mostramos los paseos del más reciente al más antiguo
+    const historialInvertido = [...historial].reverse();
+    
+    let html = '';
+    historialInvertido.forEach(paseo => {
+        html += `
+            <div class="item-historial">
+                <div class="item-historial-Header">
+                    <span>📅 ${paseo.fecha} - 🕒 ${paseo.horaInicio}</span>
+                </div>
+                <div class="item-historial-detalles">
+                    👣 <strong>${paseo.pasos} pasos</strong> | 📏 <strong>${paseo.km} Km</strong> | ⏱️ ${paseo.duracion}
+                </div>
+            </div>
+        `;
+    });
+
+    listaHistorialContainer.innerHTML = html;
 }
 
 function actualizarGrafica() {
@@ -102,10 +185,8 @@ function actualizarGrafica() {
     if (!canvas) return;
 
     let historial = JSON.parse(localStorage.getItem('historialPaseos')) || [];
-    
-    // Cogemos los últimos 7 registros para que la gráfica no se sature
     const ultimos = historial.slice(-7);
-    const fechas = ultimos.map(item => item.fecha);
+    const fechas = ultimos.map(item => `${item.fecha} (${item.horaInicio})`);
     const totalPasos = ultimos.map(item => item.pasos);
 
     if (miGrafica) {
@@ -135,7 +216,7 @@ function actualizarGrafica() {
     });
 }
 
-// Botones
+// Botones de control
 btnEmpezar.addEventListener('click', () => {
     solicitarPermisosSensor();
 });
@@ -144,5 +225,13 @@ btnParar.addEventListener('click', () => {
     if (!caminando) return;
     caminando = false;
     window.removeEventListener('devicemotion', manejarMovimiento);
+    
+    document.body.classList.remove('activo');
+    estadoActividad.textContent = "Estado: Detenido";
+    estadoActividad.className = "estado-parado";
+    
+    btnEmpezar.disabled = false;
+    btnParar.disabled = true;
+    
     guardarPaseo();
 });
