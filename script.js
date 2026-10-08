@@ -131,13 +131,20 @@ function guardarPaseo() {
     const hoy = new Date().toLocaleDateString();
     const tiempoTotalStr = formatearTiempo(segundosTranscurridos);
 
+    // CÁLCULO DE LA VELOCIDAD (Km/h)
+    let velocidadKmH = 0;
+    if (segundosTranscurridos > 0) {
+        velocidadKmH = (distanciaKm / segundosTranscurridos) * 3600;
+    }
+
     const nuevoPaseo = {
         fecha: hoy,
         horaInicio: horaInicioStr,
         duracion: tiempoTotalStr,
         pasos: pasos,
         km: Number(distanciaKm.toFixed(2)),
-        kcal: Number(calorias.toFixed(1))
+        kcal: Number(calorias.toFixed(1)),
+        velocidad: Number(velocidadKmH.toFixed(1))
     };
 
     let historial = JSON.parse(localStorage.getItem('historialPaseos')) || [];
@@ -147,7 +154,7 @@ function guardarPaseo() {
     actualizarGrafica();
     actualizarListaHistorial();
     
-    alert(`¡Paseo guardado!\nFecha: ${hoy} (${horaInicioStr})\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)`);
+    alert(`¡Paseo guardado!\nFecha: ${hoy} (${horaInicioStr})\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)\nVelocidad: ${velocidadKmH.toFixed(1)} Km/h`);
 }
 
 function actualizarListaHistorial() {
@@ -165,13 +172,15 @@ function actualizarListaHistorial() {
     
     let html = '';
     historialInvertido.forEach(paseo => {
+        const vel = paseo.velocidad !== undefined ? paseo.velocidad : 0;
+
         html += `
             <div class="item-historial">
                 <div class="item-historial-Header">
                     <span>📅 ${paseo.fecha} - 🕒 ${paseo.horaInicio}</span>
                 </div>
                 <div class="item-historial-detalles">
-                    👣 <strong>${paseo.pasos} pasos</strong> | 📏 <strong>${paseo.km} Km</strong> | ⏱️ ${paseo.duracion}
+                    👣 <strong>${paseo.pasos} pasos</strong> | 📏 <strong>${paseo.km} Km</strong> | ⏱️ ${paseo.duracion} | ⚡ <strong>${vel} Km/h</strong>
                 </div>
             </div>
         `;
