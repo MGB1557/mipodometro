@@ -8,6 +8,28 @@ let tiempoInicio = 0;
 let cronometroIntervalo = null;
 let segundosTranscurridos = 0;
 
+// Funciones para evitar que la pantalla se apague (Wake Lock)
+let wakeLock = null;
+async function solicitarWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log("Pantalla bloqueada para que no se apague.");
+        }
+    } catch (err) {
+        console.error(`${err.name}, ${err.message}`);
+    }
+}
+
+function liberarWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+            wakeLock = null;
+            console.log("Wake lock liberado.");
+        });
+    }
+}
+
 const longitudZancada = 0.74; 
 const pesoUsuarioKg = 70;    
 
@@ -68,6 +90,9 @@ function iniciarSensor() {
     calorias = 0;
     segundosTranscurridos = 0;
     tiempoInicio = new Date();
+    
+    // Solicitamos que la pantalla no se apague en el móvil
+    solicitarWakeLock();
     
     actualizarPantalla();
     
@@ -234,6 +259,9 @@ btnParar.addEventListener('click', () => {
     if (!caminando) return;
     caminando = false;
     window.removeEventListener('devicemotion', manejarMovimiento);
+    
+    // Liberamos el bloqueo de pantalla al terminar
+    liberarWakeLock();
     
     document.body.classList.remove('activo');
     estadoActividad.textContent = "Estado: Detenido";
