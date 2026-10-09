@@ -319,6 +319,13 @@ btnEmpezar.addEventListener('click', () => {
 
 btnParar.addEventListener('click', () => {
     if (!caminando) return;
+
+    // 🛡️ PROTECCIÓN CONTRA TOQUES EN EL BOLSILLO
+    let seguro = confirm("¿Deseas finalizar el paseo y guardar los datos?");
+    if (!seguro) {
+        return; // Si le da a "Cancelar", la caminata sigue adelante tan normal
+    }
+
     caminando = false;
     window.removeEventListener('devicemotion', manejarMovimiento);
     
