@@ -10,6 +10,7 @@
     <!-- Incluimos Chart.js desde un CDN seguro para la gráfica -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
     <h1>Mi Podómetro</h1>
@@ -62,6 +63,21 @@
             <button id="CerrarTutorial">¡Entendido!</button>
         </div>
     </div>
+
+    <!-- Modal de Alerta por Suspensión / Inactividad -->
+<div id="modalSuspension" class="modal" style="display: none;">
+    <div class="modal-contenido" style="border-left: 5px solid #dc3545;">
+        <h3 style="color: #dc3545;">⚠️ ¡Atención! El podómetro lleva un rato sin contar</h3>
+        <p><b>¿Qué ha ocurrido?</b> El sistema de tu móvil o el navegador han pausado la aplicación en segundo plano para ahorrar batería.</p>
+        <p><b>¿Cómo solucionarlo para que no vuelva a ocurrir?</b></p>
+        <ul style="text-align: left; margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
+            <li>No cierres el navegador ni minimices la pestaña mientras caminas.</li>
+            <li>Asegúrate de que la pantalla no se apague del todo (el Wake Lock ayuda, pero evita bloquear el móvil manualmente).</li>
+            <li>Si usas Android, revisa que los ajustes de ahorro de batería no restrinjan a tu navegador.</li>
+        </ul>
+        <button id="btnCerrarSuspension" style="background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">¡Entendido, continuar!</button>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>

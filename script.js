@@ -8,6 +8,11 @@ let tiempoInicio = 0;
 let cronometroIntervalo = null;
 let segundosTranscurridos = 0;
 
+// Variables y lógica del Watchdog (Vigía de suspensión)
+let watchdogTimer = null;
+let ultimoPasoRegistrado = 0;
+let ultimaMarcaTiempo = Date.now();
+
 // Funciones para evitar que la pantalla se apague (Wake Lock)
 let wakeLock = null;
 async function solicitarWakeLock() {
@@ -110,6 +115,9 @@ function iniciarSensor() {
     btnParar.disabled = false;
     
     window.addEventListener('devicemotion', manejarMovimiento);
+
+    // INICIAMOS EL VIGÍA DE SUSPENSIÓN
+    iniciarWatchdog();
 }
 
 function manejarMovimiento(evento) {
@@ -129,8 +137,62 @@ function manejarMovimiento(evento) {
         calorias = pasos * 0.04 * (pesoUsuarioKg / 70);
 
         actualizarPantalla();
+
+        // ACTUALIZAMOS LA ACTIVIDAD DEL VIGÍA CADA VEZ QUE DA UN PASO
+        registrarActividadPasos(pasos);
     }
 }
+
+// --- FUNCIONES DEL WATCHDOG (VIGÍA) ---
+function iniciarWatchdog() {
+    ultimoPasoRegistrado = pasos;
+    ultimaMarcaTiempo = Date.now();
+
+    if (watchdogTimer) clearInterval(watchdogTimer);
+
+    // Comprobamos cada 30 segundos si lleva demasiado tiempo sin sumar pasos
+    watchdogTimer = setInterval(() => {
+        if (caminando) {
+            let tiempoSinMoverse = Date.now() - ultimaMarcaTiempo;
+            
+            // Si pasan más de 2 minutos (120000 ms) sin registrar ningún paso nuevo
+            if (tiempoSinMoverse > 120000) {
+                mostrarAvisoSuspension();
+            }
+        }
+    }, 30000);
+}
+
+function detenerWatchdog() {
+    if (watchdogTimer) {
+        clearInterval(watchdogTimer);
+        watchdogTimer = null;
+    }
+}
+
+function registrarActividadPasos(pasosActuales) {
+    if (pasosActuales > ultimoPasoRegistrado) {
+        ultimoPasoRegistrado = pasosActuales;
+        ultimaMarcaTiempo = Date.now(); // Actualizamos el reloj de actividad
+    }
+}
+
+function mostrarAvisoSuspension() {
+    const modal = document.getElementById("modalSuspension");
+    if (modal) {
+        modal.style.display = "flex";
+    }
+}
+
+// Botón para cerrar el aviso y reactivar el temporizador del vigía
+const btnCerrarSusp = document.getElementById("btnCerrarSuspension");
+if (btnCerrarSusp) {
+    btnCerrarSusp.addEventListener("click", function() {
+        document.getElementById("modalSuspension").style.display = "none";
+        ultimaMarcaTiempo = Date.now(); // Reiniciamos el margen de tiempo
+    });
+}
+// --------------------------------------
 
 function actualizarPantalla() {
     txtPasos.textContent = pasos;
@@ -202,7 +264,7 @@ function actualizarListaHistorial() {
         html += `
             <div class="item-historial">
                 <div class="item-historial-Header">
-                    <span>📅 ${paseo.fecha} - 🕒 ${paseo.horaInicio}</span>
+                    <span>📅 ${paseo.fecha} 🕒 ${paseo.horaInicio}</span>
                 </div>
                 <div class="item-historial-detalles">
                     👣 <strong>${paseo.pasos} pasos</strong> | 📏 <strong>${paseo.km} Km</strong> | ⏱️ ${paseo.duracion} | ⚡ <strong>${vel} Km/h</strong>
@@ -260,7 +322,8 @@ btnParar.addEventListener('click', () => {
     caminando = false;
     window.removeEventListener('devicemotion', manejarMovimiento);
     
-    // Liberamos el bloqueo de pantalla al terminar
+    // DETENEMOS EL VIGÍA Y LIBERAMOS RECURSOS
+    detenerWatchdog();
     liberarWakeLock();
     
     document.body.classList.remove('activo');
