@@ -366,10 +366,12 @@ btnEmpezar.addEventListener('click', () => {
     solicitarPermisosSensor();
 });
 
-// --- PROTECCIÓN DE PULSACIÓN LARGA PARA EL BOTÓN PARAR (5 segundos) ---
+// --- PROTECCIÓN DE PULSACIÓN LARGA (Barra de progreso bajo el estado) ---
 let holdTimer = null;
-let holdInterval = null;
-const holdDuration = 5000;
+const holdDuration = 5000; // 5 segundos
+
+const contenedorBarra = document.getElementById('contenedorBarraProgreso');
+const barraProgreso = document.getElementById('barraProgreso');
 
 if (btnParar) {
     const iniciarHold = (e) => {
@@ -379,19 +381,21 @@ if (btnParar) {
             e.preventDefault();
         }
 
-        let segundosRestantes = 5;
-        btnParar.textContent = `Mantén (${segundosRestantes}s)...`;
+        // Mostramos la barrita y activamos la animación con clases CSS
+        if (contenedorBarra && barraProgreso) {
+            contenedorBarra.className = "barra-progreso-visible";
+            barraProgreso.classList.remove('animar');
+            
+            // Forzamos un pequeño respiro para que la transición arranque desde 0%
+            setTimeout(() => {
+                barraProgreso.classList.add('animar');
+            }, 50);
+        }
+
+        btnParar.textContent = "Mantén pulsado...";
         btnParar.style.background = "linear-gradient(135deg, #e67e22 0%, #d35400 100%)";
 
         if (holdTimer) clearTimeout(holdTimer);
-        if (holdInterval) clearInterval(holdInterval);
-
-        holdInterval = setInterval(() => {
-            segundosRestantes--;
-            if (segundosRestantes > 0) {
-                btnParar.textContent = `Mantén (${segundosRestantes}s)...`;
-            }
-        }, 1000);
 
         holdTimer = setTimeout(() => {
             cancelarHold();
@@ -404,9 +408,10 @@ if (btnParar) {
             clearTimeout(holdTimer);
             holdTimer = null;
         }
-        if (holdInterval) {
-            clearInterval(holdInterval);
-            holdInterval = null;
+        // Ocultamos y reseteamos la barrita mediante clases
+        if (contenedorBarra && barraProgreso) {
+            contenedorBarra.className = "barra-progreso-oculta";
+            barraProgreso.classList.remove('animar');
         }
         if (caminando) {
             btnParar.textContent = "Parar";
