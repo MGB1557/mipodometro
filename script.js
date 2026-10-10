@@ -217,6 +217,11 @@ function guardarPaseo() {
     clearInterval(cronometroIntervalo);
 
     const horaInicioStr = tiempoInicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // Capturamos la hora exacta de finalización
+    const tiempoFin = new Date();
+    const horaFinStr = tiempoFin.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     const hoy = new Date().toLocaleDateString();
     const tiempoTotalStr = formatearTiempo(segundosTranscurridos);
 
@@ -228,6 +233,7 @@ function guardarPaseo() {
     const nuevoPaseo = {
         fecha: hoy,
         horaInicio: horaInicioStr,
+        horaFin: horaFinStr,
         duracion: tiempoTotalStr,
         pasos: pasos,
         km: Number(distanciaKm.toFixed(2)),
@@ -243,7 +249,7 @@ function guardarPaseo() {
     actualizarListaHistorial();
     actualizarResumenMensual();
     
-    alert(`¡Paseo guardado!\nFecha: ${hoy} (${horaInicioStr})\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)\nVelocidad: ${velocidadKmH.toFixed(1)} Km/h`);
+    alert(`¡Paseo guardado!\nFecha: ${hoy}\nHorario: ${horaInicioStr} ➔ ${horaFinStr}\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)\nVelocidad: ${velocidadKmH.toFixed(1)} Km/h`);
 }
 
 function actualizarListaHistorial() {
@@ -261,11 +267,14 @@ function actualizarListaHistorial() {
     let html = '';
     historialInvertido.forEach(paseo => {
         const vel = paseo.velocidad !== undefined ? paseo.velocidad : 0;
+        
+        // Si el paseo antiguo no tiene horaFin, mostramos solo la de inicio por compatibilidad
+        const horarioStr = paseo.horaFin ? `${paseo.horaInicio} ➔ ${paseo.horaFin}` : paseo.horaInicio;
 
         html += `
             <div class="item-historial">
                 <div class="item-historial-Header">
-                    <span>📅 ${paseo.fecha} 🕒 ${paseo.horaInicio}</span>
+                    <span>📅 ${paseo.fecha} 🕒 ${horarioStr}</span>
                 </div>
                 <div class="item-historial-detalles">
                     👣 <strong>${paseo.pasos} pasos</strong> | 📏 <strong>${paseo.km} Km</strong> | ⏱️ ${paseo.duracion} | ⚡ <strong>${vel} Km/h</strong>
