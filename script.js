@@ -111,17 +111,13 @@ function iniciarSensor() {
         vistaActual = 'podometro';
     }
     
-    // Solicitamos que la pantalla no se apague en el móvil
     solicitarWakeLock();
-    
     actualizarPantalla();
     
-    // Iniciar cronómetro de segundos
     cronometroIntervalo = setInterval(() => {
         segundosTranscurridos++;
     }, 1000);
     
-    // Cambios visuales de estado activo
     document.body.classList.add('activo');
     estadoActividad.textContent = "Estado: En marcha (Caminando)";
     estadoActividad.className = "estado-activo";
@@ -130,8 +126,6 @@ function iniciarSensor() {
     btnParar.disabled = false;
     
     window.addEventListener('devicemotion', manejarMovimiento);
-
-    // INICIAMOS EL VIGÍA DE SUSPENSIÓN
     iniciarWatchdog();
 }
 
@@ -372,20 +366,25 @@ btnEmpezar.addEventListener('click', () => {
     solicitarPermisosSensor();
 });
 
-// --- PROTECCIÓN DE PULSACIÓN LARGA PARA EL BOTÓN PARAR (Anticlucs de bolsillo) ---
+// --- PROTECCIÓN DE PULSACIÓN LARGA PARA EL BOTÓN PARAR (5 segundos) ---
 let holdTimer = null;
 let holdInterval = null;
-const holdDuration = 5000; // 5 segundos obligatorios
+const holdDuration = 5000;
 
 if (btnParar) {
     const iniciarHold = (e) => {
         if (!caminando || btnParar.disabled) return;
         
-        e.preventDefault();
+        if (e.cancelable) {
+            e.preventDefault();
+        }
 
         let segundosRestantes = 5;
         btnParar.textContent = `Mantén (${segundosRestantes}s)...`;
-        btnParar.style.background = "linear-gradient(135deg, #e67e22 0%, #d35400 100%)"; // Naranja de alerta
+        btnParar.style.background = "linear-gradient(135deg, #e67e22 0%, #d35400 100%)";
+
+        if (holdTimer) clearTimeout(holdTimer);
+        if (holdInterval) clearInterval(holdInterval);
 
         holdInterval = setInterval(() => {
             segundosRestantes--;
@@ -411,26 +410,26 @@ if (btnParar) {
         }
         if (caminando) {
             btnParar.textContent = "Parar";
-            btnParar.style.background = ""; // Restaura su estilo original
+            btnParar.style.background = "";
         }
     };
 
-    // Eventos táctiles y de ratón
-    btnParar.addEventListener('mousedown', iniciarHold);
-    btnParar.addEventListener('touchstart', iniciarHold);
+    btnParar.addEventListener('touchstart', (e) => {
+        iniciarHold(e);
+    }, { passive: false });
 
-    btnParar.addEventListener('mouseup', cancelarHold);
-    btnParar.addEventListener('mouseleave', cancelarHold);
     btnParar.addEventListener('touchend', cancelarHold);
     btnParar.addEventListener('touchcancel', cancelarHold);
+
+    btnParar.addEventListener('mousedown', iniciarHold);
+    btnParar.addEventListener('mouseup', cancelarHold);
+    btnParar.addEventListener('mouseleave', cancelarHold);
 }
 
-// Función que se ejecuta tras aguantar los 3 segundos exactos
 function ejecutarPararReal() {
-    // 🛡️ SEGUNDA BARRERA: Confirmación clásica de seguridad
     let seguro = confirm("¿Deseas finalizar el paseo y guardar los datos?");
     if (!seguro) {
-        return; // Si cancela, el paseo continúa
+        return;
     }
 
     caminando = false;
@@ -450,7 +449,6 @@ function ejecutarPararReal() {
     
     guardarPaseo();
 }
-// -------------------------------------------------------------------------------
 
 if (btnBorrarHistorial) {
     btnBorrarHistorial.addEventListener('click', () => {
