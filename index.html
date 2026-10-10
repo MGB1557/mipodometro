@@ -13,7 +13,7 @@
 
 <body>
 
-   <h1>Mi Podómetro</h1>
+    <h1>Mi Podómetro</h1>
 
     <!-- Botón de Navegación entre Pantallas -->
     <div class="botones-navegacion">
@@ -28,11 +28,12 @@
             <button type="button" id="btnTutorial">Ayuda / Tutorial</button>
         </div>
 
-        <div id="estadoActividad" class="estado-parado">Estado: Detenido</div>
-
+        
         <div class="tarjeta">
             <h3>Pasos dados</h3>
             <div id="contadorPasos" class="numero">0</div>
+            <div id="estadoActividad" class="estado-parado">Estado: Detenido</div>
+
         </div>
 
         <div class="tarjeta">
@@ -73,14 +74,13 @@
         </div>
     </div>
 
-    <!-- Modales (Tutorial y Suspensión se quedan fuera para que funcionen en cualquier pantalla) -->
-    <div id="modalTutorial" class="modal">
+   <div id="modalTutorial" class="modal">
         <div class="modal-contenido">
             <h3>Guía de Uso del Podómetro</h3>
             <p>1. Pulsa <strong>"Empezar a Caminar"</strong> y acepta los permisos de movimiento de tu móvil.</p>
             <p>2. El fondo cambiará a un tono verdoso y se pondrá en marcha el cronómetro automático.</p>
-            <p>3. Lleva el móvil contigo. La app cuenta con un <strong>vigía de inactividad</strong> que te avisará si pasan más de 2 minutos sin sumar pasos (por si el navegador intenta suspenderla). <strong>¡Tranquilo, los pasos no se pierden!</strong> Si te detienes o salta el aviso, en cuanto cierres la ventana o sigas caminando, la app continuará sumando con total normalidad.</p>
-            <p>4. Al terminar, pulsa <strong>"Parar"</strong> (con confirmación de seguridad para evitar clics en el bolsillo) para guardar tus datos en el historial.</p>
+            <p>3. Lleva el móvil contigo. La app cuenta con un <strong>vigía de inactividad</strong> que te avisará si pasan más de 2 minutos sin sumar pasos. <strong>¡Tranquilo, los pasos no se pierden!</strong></p>
+            <p>4. Al terminar, <strong>mantén pulsado el botón "Parar" durante 5 segundos</strong> (protección contra clics en el bolsillo) para guardar tus datos.</p>
             <p>5. Arriba tienes un botón para alternar entre el Podómetro y el <strong>Historial / Resumen Mensual</strong>.</p>
             <button type="button" id="CerrarTutorial">¡Entendido!</button>
         </div>
@@ -94,6 +94,7 @@
             <button type="button" id="btnCerrarSuspension">Continuar Paseo</button>
         </div>
     </div>
+    
     <script src="script.js" defer></script>
 </body>
 </html>

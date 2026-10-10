@@ -49,7 +49,8 @@ const txtKcal = document.getElementById('contadorKcal');
 const estadoActividad = document.getElementById('estadoActividad');
 const listaHistorialContainer = document.getElementById('listaHistorial');
 const btnBorrarHistorial = document.getElementById('btnBorrarHistorial');
-// --- NUEVOS SELECTORES PARA LA NAVEGACIÓN ENTRE PANTALLAS ---
+
+// Selectores para la navegación entre pantallas
 const btnCambiarPantalla = document.getElementById('btnCambiarPantalla');
 const pantallaPodometro = document.getElementById('pantallaPodometro');
 const pantallaHistorial = document.getElementById('pantallaHistorial');
@@ -62,7 +63,7 @@ let miGrafica = null;
 document.addEventListener('DOMContentLoaded', () => {
     actualizarGrafica();
     actualizarListaHistorial();
-    actualizarResumenMensual(); // <-- Añadido aquí
+    actualizarResumenMensual();
     
     if (!localStorage.getItem('tutorialVisto')) {
         modalTutorial.style.display = 'flex';
@@ -103,7 +104,6 @@ function iniciarSensor() {
     segundosTranscurridos = 0;
     tiempoInicio = new Date();
 
-    // --- LÍNEA A AÑADIR AQUÍ ---
     if (pantallaHistorial && pantallaPodometro) {
         pantallaHistorial.style.display = 'none';
         pantallaPodometro.style.display = 'flex';
@@ -152,8 +152,6 @@ function manejarMovimiento(evento) {
         calorias = pasos * 0.04 * (pesoUsuarioKg / 70);
 
         actualizarPantalla();
-
-        // ACTUALIZAMOS LA ACTIVIDAD DEL VIGÍA CADA VEZ QUE DA UN PASO
         registrarActividadPasos(pasos);
     }
 }
@@ -165,12 +163,9 @@ function iniciarWatchdog() {
 
     if (watchdogTimer) clearInterval(watchdogTimer);
 
-    // Comprobamos cada 30 segundos si lleva demasiado tiempo sin sumar pasos
     watchdogTimer = setInterval(() => {
         if (caminando) {
             let tiempoSinMoverse = Date.now() - ultimaMarcaTiempo;
-            
-            // Si pasan más de 2 minutos (120000 ms) sin registrar ningún paso nuevo
             if (tiempoSinMoverse > 120000) {
                 mostrarAvisoSuspension();
             }
@@ -188,7 +183,7 @@ function detenerWatchdog() {
 function registrarActividadPasos(pasosActuales) {
     if (pasosActuales > ultimoPasoRegistrado) {
         ultimoPasoRegistrado = pasosActuales;
-        ultimaMarcaTiempo = Date.now(); // Actualizamos el reloj de actividad
+        ultimaMarcaTiempo = Date.now();
     }
 }
 
@@ -199,15 +194,13 @@ function mostrarAvisoSuspension() {
     }
 }
 
-// Botón para cerrar el aviso y reactivar el temporizador del vigía
 const btnCerrarSusp = document.getElementById("btnCerrarSuspension");
 if (btnCerrarSusp) {
     btnCerrarSusp.addEventListener("click", function() {
         document.getElementById("modalSuspension").style.display = "none";
-        ultimaMarcaTiempo = Date.now(); // Reiniciamos el margen de tiempo
+        ultimaMarcaTiempo = Date.now();
     });
 }
-// --------------------------------------
 
 function actualizarPantalla() {
     txtPasos.textContent = pasos;
@@ -233,7 +226,6 @@ function guardarPaseo() {
     const hoy = new Date().toLocaleDateString();
     const tiempoTotalStr = formatearTiempo(segundosTranscurridos);
 
-    // CÁLCULO DE LA VELOCIDAD (Km/h)
     let velocidadKmH = 0;
     if (segundosTranscurridos > 0) {
         velocidadKmH = (distanciaKm / segundosTranscurridos) * 3600;
@@ -270,7 +262,6 @@ function actualizarListaHistorial() {
         return;
     }
 
-    // Mostramos los paseos del más reciente al más antiguo
     const historialInvertido = [...historial].reverse();
     
     let html = '';
@@ -292,7 +283,6 @@ function actualizarListaHistorial() {
     listaHistorialContainer.innerHTML = html;
 }
 
-
 function actualizarResumenMensual() {
     const contenedorMensual = document.getElementById('resumenMensual');
     if (!contenedorMensual) return;
@@ -307,9 +297,7 @@ function actualizarResumenMensual() {
     const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const acumuladoMeses = {};
 
-    // Recorremos todo el historial para agrupar por mes y año
     historial.forEach(paseo => {
-        // En español, toLocaleDateString() suele dar formato "DD/MM/YYYY" o "D/M/YYYY"
         const partes = paseo.fecha.split('/');
         if (partes.length === 3) {
             const mesIndex = parseInt(partes[1], 10) - 1;
@@ -326,7 +314,6 @@ function actualizarResumenMensual() {
         }
     });
 
-    // Generamos el HTML para mostrar los resultados agrupados
     let html = '';
     for (const [mes, datos] of Object.entries(acumuladoMeses)) {
         html += `
@@ -380,24 +367,75 @@ function actualizarGrafica() {
     });
 }
 
-// Botones de control
+// Botón Empezar
 btnEmpezar.addEventListener('click', () => {
     solicitarPermisosSensor();
 });
 
-btnParar.addEventListener('click', () => {
-    if (!caminando) return;
+// --- PROTECCIÓN DE PULSACIÓN LARGA PARA EL BOTÓN PARAR (Anticlucs de bolsillo) ---
+let holdTimer = null;
+let holdInterval = null;
+const holdDuration = 5000; // 5 segundos obligatorios
 
-    // 🛡️ PROTECCIÓN CONTRA TOQUES EN EL BOLSILLO
+if (btnParar) {
+    const iniciarHold = (e) => {
+        if (!caminando || btnParar.disabled) return;
+        
+        e.preventDefault();
+
+        let segundosRestantes = 5;
+        btnParar.textContent = `Mantén (${segundosRestantes}s)...`;
+        btnParar.style.background = "linear-gradient(135deg, #e67e22 0%, #d35400 100%)"; // Naranja de alerta
+
+        holdInterval = setInterval(() => {
+            segundosRestantes--;
+            if (segundosRestantes > 0) {
+                btnParar.textContent = `Mantén (${segundosRestantes}s)...`;
+            }
+        }, 1000);
+
+        holdTimer = setTimeout(() => {
+            cancelarHold();
+            ejecutarPararReal();
+        }, holdDuration);
+    };
+
+    const cancelarHold = () => {
+        if (holdTimer) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+        }
+        if (holdInterval) {
+            clearInterval(holdInterval);
+            holdInterval = null;
+        }
+        if (caminando) {
+            btnParar.textContent = "Parar";
+            btnParar.style.background = ""; // Restaura su estilo original
+        }
+    };
+
+    // Eventos táctiles y de ratón
+    btnParar.addEventListener('mousedown', iniciarHold);
+    btnParar.addEventListener('touchstart', iniciarHold);
+
+    btnParar.addEventListener('mouseup', cancelarHold);
+    btnParar.addEventListener('mouseleave', cancelarHold);
+    btnParar.addEventListener('touchend', cancelarHold);
+    btnParar.addEventListener('touchcancel', cancelarHold);
+}
+
+// Función que se ejecuta tras aguantar los 3 segundos exactos
+function ejecutarPararReal() {
+    // 🛡️ SEGUNDA BARRERA: Confirmación clásica de seguridad
     let seguro = confirm("¿Deseas finalizar el paseo y guardar los datos?");
     if (!seguro) {
-        return; // Si le da a "Cancelar", la caminata sigue adelante tan normal
+        return; // Si cancela, el paseo continúa
     }
 
     caminando = false;
     window.removeEventListener('devicemotion', manejarMovimiento);
     
-    // DETENEMOS EL VIGÍA Y LIBERAMOS RECURSOS
     detenerWatchdog();
     liberarWakeLock();
     
@@ -407,11 +445,13 @@ btnParar.addEventListener('click', () => {
     
     btnEmpezar.disabled = false;
     btnParar.disabled = true;
+    btnParar.textContent = "Parar";
+    btnParar.style.background = "";
     
     guardarPaseo();
-});
+}
+// -------------------------------------------------------------------------------
 
-// Abajo del todo con tus event listeners:
 if (btnBorrarHistorial) {
     btnBorrarHistorial.addEventListener('click', () => {
         let seguro = confirm("¿Estás seguro de que quieres borrar todo el historial de paseos?");
@@ -420,13 +460,11 @@ if (btnBorrarHistorial) {
             localStorage.removeItem('historialPaseos');
             alert("Historial borrado correctamente.");
             location.reload();
-        } else {
-            console.log("Borrado de historial cancelado.");
         }
     });
 }
 
-// Lógica para alternar entre pantallas con el botón superior
+// Navegación entre pantallas
 if (btnCambiarPantalla) {
     btnCambiarPantalla.addEventListener('click', () => {
         if (vistaActual === 'podometro') {
