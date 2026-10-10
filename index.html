@@ -13,72 +13,87 @@
 
 <body>
 
-    <h1>Mi Podómetro</h1>
+   <h1>Mi Podómetro</h1>
 
-    <div class="botones">
-        <button id="btnEmpezar">Empezar a Caminar</button>
-        <button id="btnParar" disabled>Parar</button>
-        <button id="btnTutorial">Ayuda / Tutorial</button>
+    <!-- Botón de Navegación entre Pantallas -->
+    <div class="botones-navegacion">
+        <button type="button" id="btnCambiarPantalla" class="btn-nav">📊 Ver Historial y Estadísticas</button>
     </div>
 
-    <div id="estadoActividad" class="estado-parado">Estado: Detenido</div>
+    <!-- PANTALLA 1: EL PODÓMETRO (Visible por defecto) -->
+    <div id="pantallaPodometro" class="pantalla-seccion">
+        <div class="botones">
+            <button type="button" id="btnEmpezar">Empezar a Caminar</button>
+            <button type="button" id="btnParar" disabled>Parar</button>
+            <button type="button" id="btnTutorial">Ayuda / Tutorial</button>
+        </div>
 
-    <div class="tarjeta">
-        <h3>Pasos dados</h3>
-        <div id="contadorPasos" class="numero">0</div>
-    </div>
+        <div id="estadoActividad" class="estado-parado">Estado: Detenido</div>
 
-    <div class="tarjeta">
-        <h3>Distancia (Km)</h3>
-        <div id="contadorKm" class="numero">0.00</div>
-    </div>
+        <div class="tarjeta">
+            <h3>Pasos dados</h3>
+            <div id="contadorPasos" class="numero">0</div>
+        </div>
 
-    <div class="tarjeta">
-        <h3>Calorías (Kcal)</h3>
-        <div id="contadorKcal" class="numero">0.0</div>
-    </div>
+        <div class="tarjeta">
+            <h3>Distancia (Km)</h3>
+            <div id="contadorKm" class="numero">0.00</div>
+        </div>
 
-    <!-- Sección de Gráfica -->
-    <div class="tarjeta seccion-grafica">
-        <h3>Evolución de Pasos</h3>
-        <canvas id="graficaPasos"></canvas>
-    </div>
-
-    <!-- Sección de Lista de Historial -->
-    <div class="tarjeta seccion-historial">
-        <h3>Historial de Paseos</h3>
-        <div id="listaHistorial" class="lista-historial-contenedor">
-            <p class="sin-historial">No hay paseos guardados todavía.</p>
+        <div class="tarjeta">
+            <h3>Calorías (Kcal)</h3>
+            <div id="contadorKcal" class="numero">0.0</div>
         </div>
     </div>
 
-    <!-- Modal del Tutorial Actualizado -->
+    <!-- PANTALLA 2: HISTORIAL Y ESTADÍSTICAS (Oculta por defecto) -->
+    <div id="pantallaHistorial" class="pantalla-seccion" style="display: none;">
+        <!-- Sección de Gráfica -->
+        <div class="tarjeta seccion-grafica">
+            <h3>Evolución de Pasos</h3>
+            <canvas id="graficaPasos"></canvas>
+        </div>
+
+        <!-- Sección de Resumen Mensual -->
+        <div class="tarjeta seccion-mensual">
+            <h3>Resumen por Mes</h3>
+            <div id="resumenMensual" class="lista-historial-contenedor">
+                <p class="sin-historial">No hay datos mensuales todavía.</p>
+            </div>
+        </div>
+
+        <!-- Sección de Lista de Historial -->
+        <div class="tarjeta seccion-historial">
+            <h3>Historial de Paseos</h3>
+            <div id="listaHistorial" class="lista-historial-contenedor">
+                <p class="sin-historial">No hay paseos guardados todavía.</p>
+            </div>
+            
+            <button type="button" id="btnBorrarHistorial">🗑️ Borrar Historial</button>
+        </div>
+    </div>
+
+    <!-- Modales (Tutorial y Suspensión se quedan fuera para que funcionen en cualquier pantalla) -->
     <div id="modalTutorial" class="modal">
         <div class="modal-contenido">
             <h3>Guía de Uso del Podómetro</h3>
             <p>1. Pulsa <strong>"Empezar a Caminar"</strong> y acepta los permisos de movimiento de tu móvil.</p>
             <p>2. El fondo cambiará a un tono verdoso y se pondrá en marcha el cronómetro automático.</p>
-            <p>3. Guarda el móvil en el bolsillo o llévalo contigo mientras caminas.</p>
-            <p>4. Al terminar, pulsa <strong>"Parar"</strong>. Se guardarán tu tiempo, pasos y kilómetros en la lista de historial para comparar tus marcas y ver si mejoras.</p>
-            <button id="CerrarTutorial">¡Entendido!</button>
+            <p>3. Lleva el móvil contigo. La app cuenta con un <strong>vigía de inactividad</strong> que te avisará si pasan más de 2 minutos sin sumar pasos (por si el navegador intenta suspenderla). <strong>¡Tranquilo, los pasos no se pierden!</strong> Si te detienes o salta el aviso, en cuanto cierres la ventana o sigas caminando, la app continuará sumando con total normalidad.</p>
+            <p>4. Al terminar, pulsa <strong>"Parar"</strong> (con confirmación de seguridad para evitar clics en el bolsillo) para guardar tus datos en el historial.</p>
+            <p>5. Arriba tienes un botón para alternar entre el Podómetro y el <strong>Historial / Resumen Mensual</strong>.</p>
+            <button type="button" id="CerrarTutorial">¡Entendido!</button>
         </div>
     </div>
 
-    <!-- Modal de Alerta por Suspensión / Inactividad -->
-<div id="modalSuspension" class="modal" style="display: none;">
-    <div class="modal-contenido" style="border-left: 5px solid #dc3545;">
-        <h3 style="color: #dc3545;">⚠️ ¡Atención! El podómetro lleva un rato sin contar</h3>
-        <p><b>¿Qué ha ocurrido?</b> El sistema de tu móvil o el navegador han pausado la aplicación en segundo plano para ahorrar batería.</p>
-        <p><b>¿Cómo solucionarlo para que no vuelva a ocurrir?</b></p>
-        <ul style="text-align: left; margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
-            <li>No cierres el navegador ni minimices la pestaña mientras caminas.</li>
-            <li>Asegúrate de que la pantalla no se apague del todo (el Wake Lock ayuda, pero evita bloquear el móvil manualmente).</li>
-            <li>Si usas Android, revisa que los ajustes de ahorro de batería no restrinjan a tu navegador.</li>
-        </ul>
-        <button id="btnCerrarSuspension" style="background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">¡Entendido, continuar!</button>
+    <div id="modalSuspension" class="modal" style="display: none;">
+        <div class="modal-contenido">
+            <h3>⚠️ Vigía de Inactividad</h3>
+            <p>Llevas más de 2 minutos sin registrar pasos. Si te has detenido a descansar, es normal. <strong>Tus pasos anteriores no se han perdido.</strong></p>
+            <p>Si sigues caminando o pulsas el botón de abajo, la app continuará registrando tu paseo con total normalidad.</p>
+            <button type="button" id="btnCerrarSuspension">Continuar Paseo</button>
+        </div>
     </div>
-</div>
-
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>

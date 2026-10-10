@@ -236,3 +236,61 @@ button:disabled {
     margin-top: 15px;
     background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
 }
+
+/* Estilo para el botón de borrar historial */
+#btnBorrarHistorial {
+    margin-top: 15px;
+    width: 100%;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#btnBorrarHistorial:hover {
+    background-color: #c0392b; /* Un rojo un poco más oscuro al pasar el ratón */
+}
+
+/* Tarjeta del Resumen Mensual */
+.seccion-mensual {
+    max-width: 320px;
+    text-align: left;
+    background: linear-gradient(135deg, #ffffff 0%, #e8f8f5 100%);
+    border-left: 6px solid #1abc9c;
+}
+
+/* Botón de cambio de pantalla */
+.botones-navegacion {
+    margin-bottom: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-nav {
+    background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.2s;
+}
+
+.btn-nav:active {
+    transform: scale(0.95);
+}
+
+.pantalla-seccion {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

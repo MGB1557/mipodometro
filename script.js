@@ -48,6 +48,12 @@ const txtKm = document.getElementById('contadorKm');
 const txtKcal = document.getElementById('contadorKcal');
 const estadoActividad = document.getElementById('estadoActividad');
 const listaHistorialContainer = document.getElementById('listaHistorial');
+const btnBorrarHistorial = document.getElementById('btnBorrarHistorial');
+// --- NUEVOS SELECTORES PARA LA NAVEGACIÓN ENTRE PANTALLAS ---
+const btnCambiarPantalla = document.getElementById('btnCambiarPantalla');
+const pantallaPodometro = document.getElementById('pantallaPodometro');
+const pantallaHistorial = document.getElementById('pantallaHistorial');
+let vistaActual = 'podometro'; // 'podometro' o 'historial'
 
 let ultimoPasoTiempo = 0;
 let miGrafica = null;
@@ -56,6 +62,7 @@ let miGrafica = null;
 document.addEventListener('DOMContentLoaded', () => {
     actualizarGrafica();
     actualizarListaHistorial();
+    actualizarResumenMensual(); // <-- Añadido aquí
     
     if (!localStorage.getItem('tutorialVisto')) {
         modalTutorial.style.display = 'flex';
@@ -95,6 +102,14 @@ function iniciarSensor() {
     calorias = 0;
     segundosTranscurridos = 0;
     tiempoInicio = new Date();
+
+    // --- LÍNEA A AÑADIR AQUÍ ---
+    if (pantallaHistorial && pantallaPodometro) {
+        pantallaHistorial.style.display = 'none';
+        pantallaPodometro.style.display = 'flex';
+        if (btnCambiarPantalla) btnCambiarPantalla.textContent = "📊 Ver Historial y Estadísticas";
+        vistaActual = 'podometro';
+    }
     
     // Solicitamos que la pantalla no se apague en el móvil
     solicitarWakeLock();
@@ -240,6 +255,7 @@ function guardarPaseo() {
 
     actualizarGrafica();
     actualizarListaHistorial();
+    actualizarResumenMensual();
     
     alert(`¡Paseo guardado!\nFecha: ${hoy} (${horaInicioStr})\nTiempo: ${tiempoTotalStr}\nPasos: ${pasos} (${distanciaKm.toFixed(2)} Km)\nVelocidad: ${velocidadKmH.toFixed(1)} Km/h`);
 }
@@ -274,6 +290,58 @@ function actualizarListaHistorial() {
     });
 
     listaHistorialContainer.innerHTML = html;
+}
+
+
+function actualizarResumenMensual() {
+    const contenedorMensual = document.getElementById('resumenMensual');
+    if (!contenedorMensual) return;
+
+    let historial = JSON.parse(localStorage.getItem('historialPaseos')) || [];
+    
+    if (historial.length === 0) {
+        contenedorMensual.innerHTML = `<p class="sin-historial">No hay datos mensuales todavía.</p>`;
+        return;
+    }
+
+    const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const acumuladoMeses = {};
+
+    // Recorremos todo el historial para agrupar por mes y año
+    historial.forEach(paseo => {
+        // En español, toLocaleDateString() suele dar formato "DD/MM/YYYY" o "D/M/YYYY"
+        const partes = paseo.fecha.split('/');
+        if (partes.length === 3) {
+            const mesIndex = parseInt(partes[1], 10) - 1;
+            const anio = partes[2];
+            const claveMes = `${mesesNombres[mesIndex]} ${anio}`;
+
+            if (!acumuladoMeses[claveMes]) {
+                acumuladoMeses[claveMes] = { pasos: 0, km: 0, totalPaseos: 0 };
+            }
+
+            acumuladoMeses[claveMes].pasos += paseo.pasos;
+            acumuladoMeses[claveMes].km += paseo.km;
+            acumuladoMeses[claveMes].totalPaseos += 1;
+        }
+    });
+
+    // Generamos el HTML para mostrar los resultados agrupados
+    let html = '';
+    for (const [mes, datos] of Object.entries(acumuladoMeses)) {
+        html += `
+            <div class="item-historial">
+                <div class="item-historial-Header">
+                    <span>📅 <strong>${mes}</strong> (${datos.totalPaseos} paseos)</span>
+                </div>
+                <div class="item-historial-detalles">
+                    👣 <strong>${datos.pasos} pasos</strong> | 📏 <strong>${datos.km.toFixed(2)} Km</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    contenedorMensual.innerHTML = html;
 }
 
 function actualizarGrafica() {
@@ -342,3 +410,35 @@ btnParar.addEventListener('click', () => {
     
     guardarPaseo();
 });
+
+// Abajo del todo con tus event listeners:
+if (btnBorrarHistorial) {
+    btnBorrarHistorial.addEventListener('click', () => {
+        let seguro = confirm("¿Estás seguro de que quieres borrar todo el historial de paseos?");
+        
+        if (seguro) {
+            localStorage.removeItem('historialPaseos');
+            alert("Historial borrado correctamente.");
+            location.reload();
+        } else {
+            console.log("Borrado de historial cancelado.");
+        }
+    });
+}
+
+// Lógica para alternar entre pantallas con el botón superior
+if (btnCambiarPantalla) {
+    btnCambiarPantalla.addEventListener('click', () => {
+        if (vistaActual === 'podometro') {
+            pantallaPodometro.style.display = 'none';
+            pantallaHistorial.style.display = 'flex';
+            btnCambiarPantalla.textContent = "👣 Volver al Podómetro";
+            vistaActual = 'historial';
+        } else {
+            pantallaHistorial.style.display = 'none';
+            pantallaPodometro.style.display = 'flex';
+            btnCambiarPantalla.textContent = "📊 Ver Historial y Estadísticas";
+            vistaActual = 'podometro';
+        }
+    });
+}
